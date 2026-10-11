@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sign in | Sai Sahayadri Academy</title>
+    <link rel="stylesheet" th:href="@{/css/academy.css}">
+</head>
+<body class="login-page">
+<main class="login-shell">
+    <section class="login-brand">
+        <a class="brand-lockup" th:href="@{/}" aria-label="Sai Sahayadri Academy home">
+            <span class="brand-mark">SS</span>
+            <span><strong>SAI SAHAYADRI</strong><small>ACADEMY</small></span>
+        </a>
+        <div class="brand-message">
+            <span class="eyebrow">LEARN WITH PURPOSE</span>
+            <h1>Build your future<br>with confidence.</h1>
+            <p>Your academy, your progress, all in one place.</p>
+        </div>
+        <div class="brand-footer">Discipline · Knowledge · Excellence</div>
+    </section>
+    <section class="login-panel">
+        <a class="back-link" th:href="@{/}">← Back to home</a>
+        <div class="login-card">
+            <span class="eyebrow">ACADEMY PORTAL</span>
+            <h2>Welcome back</h2>
+            <p class="muted">Choose your account type to sign in.</p>
+            <div class="role-switch" role="tablist" aria-label="Choose login type">
+                <button class="role-tab active" type="button" data-role="STUDENT" role="tab" aria-selected="true">Student Login</button>
+                <button class="role-tab" type="button" data-role="ADMIN" role="tab" aria-selected="false">Admin Login</button>
+            </div>
+            <div class="alert alert-error" th:if="${param.error}">
+                <span th:if="${param.error[0] == 'role'}">That account does not match the selected login. Choose the correct account type and try again.</span>
+                <span th:unless="${param.error[0] == 'role'}">The username/email or password is incorrect, or this account is inactive.</span>
+            </div>
+            <div class="alert alert-success" th:if="${param.logout}">You have been signed out securely.</div>
+            <form th:action="@{/login}" method="post" id="login-form">
+                <input type="hidden" name="expectedRole" id="expected-role" value="STUDENT">
+                <label for="username">Email or username</label>
+                <input id="username" name="username" type="text" autocomplete="username" required maxlength="180" placeholder="Enter your email or username">
+                <label for="password">Password</label>
+                <div class="password-field">
+                    <input id="password" name="password" type="password" autocomplete="current-password" required>
+                    <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false">Show</button>
+                </div>
+                <label class="remember-choice"><input type="checkbox" name="remember-me" checked> <span>Keep me signed in on this device</span></label>
+                <button class="button button-primary button-wide" type="submit" id="submit-login">Continue as student</button>
+            </form>
+            <p class="login-note">Need access? Contact the academy office.</p>
+        </div>
+        <footer class="mobile-footer">© Sai Sahayadri Academy</footer>
+    </section>
+</main>
+<script>
+    const roleInput = document.getElementById("expected-role");
+    const submitButton = document.getElementById("submit-login");
+    document.querySelectorAll(".role-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+            document.querySelectorAll(".role-tab").forEach((item) => {
+                item.classList.remove("active");
+                item.setAttribute("aria-selected", "false");
+            });
+            tab.classList.add("active");
+            tab.setAttribute("aria-selected", "true");
+            roleInput.value = tab.dataset.role;
+            submitButton.textContent = "Continue as " + tab.dataset.role.toLowerCase();
+        });
+    });
+    document.querySelector(".password-toggle").addEventListener("click", (event) => {
+        const button = event.currentTarget;
+        const password = document.getElementById("password");
+        const showing = password.type === "password";
+        password.type = showing ? "text" : "password";
+        button.textContent = showing ? "Hide" : "Show";
+        button.setAttribute("aria-pressed", String(showing));
+        button.setAttribute("aria-label", showing ? "Hide password" : "Show password");
+    });
+</script>
+</body>
+</html>

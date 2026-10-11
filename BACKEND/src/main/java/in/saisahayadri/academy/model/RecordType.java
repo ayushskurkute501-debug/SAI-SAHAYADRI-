@@ -1,0 +1,18 @@
+package in.saisahayadri.academy.model;
+
+public enum RecordType {
+    ANNOUNCEMENT,
+    NOTICE,
+    LECTURE_SCHEDULE,
+    GROUND_SCHEDULE,
+    LECTURE_ATTENDANCE,
+    GROUND_ATTENDANCE,
+    FEE,
+    PAYMENT,
+    STUDY_MATERIAL,
+    PRACTICE_QUESTION,
+    MOCK_TEST,
+    MOCK_RESULT,
+    PHYSICAL_PROGRESS,
+    NOTIFICATION
+}

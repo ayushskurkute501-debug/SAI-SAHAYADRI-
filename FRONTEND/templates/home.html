@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sai Sahayadri Academy</title>
+    <link rel="stylesheet" th:href="@{/css/academy.css}">
+</head>
+<body class="home-page">
+<header class="home-header">
+    <a class="brand-lockup" th:href="@{/}">
+        <span class="brand-mark">SS</span>
+        <span><strong>SAI SAHAYADRI</strong><small>ACADEMY</small></span>
+    </a>
+    <a class="button button-outline" th:href="@{/login}">Portal sign in</a>
+</header>
+<main class="home-hero">
+    <div class="home-copy">
+        <span class="eyebrow">DISCIPLINE · KNOWLEDGE · EXCELLENCE</span>
+        <h1>Prepare with purpose.<br><span>Achieve with confidence.</span></h1>
+        <p>A focused learning community built to help every student grow, stay ready and reach their goals.</p>
+        <a class="button button-primary home-cta" th:href="@{/login}">Enter academy portal <span aria-hidden="true">→</span></a>
+        <div class="home-pill-row"><span>Student progress</span><span>Expert guidance</span><span>One academy community</span></div>
+    </div>
+    <div class="home-illustration" aria-hidden="true">
+        <div class="sun-disc"></div>
+        <div class="book-shape"><div class="book-page"></div><div class="book-page second"></div></div>
+        <div class="illustration-caption"><span>YOUR NEXT CHAPTER</span><strong>Starts here.</strong></div>
+    </div>
+</main>
+<footer class="home-footer"><span>SAI SAHAYADRI ACADEMY</span><span>Learn · Train · Succeed</span></footer>
+</body>
+</html>

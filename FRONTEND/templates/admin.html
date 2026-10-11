@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard | Sai Sahayadri Academy</title>
+    <link rel="stylesheet" th:href="@{/css/academy.css}">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand-lockup brand-dark" th:href="@{/admin}"><span class="brand-mark">SS</span><span><strong>SAI SAHAYADRI</strong><small>ACADEMY</small></span></a>
+    <div class="topbar-right"><span class="role-chip">ADMIN</span><form th:action="@{/logout}" method="post"><button class="button button-outline button-small" type="submit">Sign out</button></form></div>
+</header>
+<main class="dashboard">
+    <section class="page-heading">
+        <div><span class="eyebrow">ACADEMY MANAGEMENT</span><h1>Admin dashboard</h1><p class="muted">Manage students, batches, schedules and learning resources.</p></div>
+        <a class="button button-primary" th:href="@{/admin/reports.csv}">Export student report ↓</a>
+    </section>
+    <div class="alert alert-success" th:if="${successMessage}" th:text="${successMessage}"></div>
+    <div class="alert alert-error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+    <nav class="section-nav">
+        <a href="#students">Students</a><a href="#batches">Batches</a><a href="#records">Academy records</a><a href="#account">Admin login</a>
+    </nav>
+    <section class="stats-grid">
+        <article class="stat-card"><span>Student accounts</span><strong th:text="${students.size()}">0</strong></article>
+        <article class="stat-card"><span>Active batches</span><strong th:text="${batches.size()}">0</strong></article>
+        <article class="stat-card"><span>Published records</span><strong th:text="${records.size()}">0</strong></article>
+    </section>
+    <section class="panel" id="students">
+        <div class="panel-heading"><div><span class="eyebrow">PEOPLE</span><h2>Student accounts</h2></div></div>
+        <form class="form-grid" th:action="@{/admin/students}" method="post">
+            <h3 class="form-title">Create student account</h3>
+            <label>Full name<input name="fullName" required maxlength="120"></label>
+            <label>Username<input name="username" required maxlength="80"></label>
+            <label>Email<input name="email" type="email" required maxlength="180"></label>
+            <label>Temporary password<input name="password" type="password" required minlength="12" maxlength="72" autocomplete="new-password"></label>
+            <label>Phone<input name="phone" maxlength="30"></label>
+            <label>Assign batch<select name="batchId"><option value="">No batch yet</option><option th:each="batch : ${batches}" th:value="${batch.id}" th:text="${batch.name}"></option></select></label>
+            <button class="button button-primary" type="submit">Create student</button>
+        </form>
+        <div class="table-wrap" th:if="${!students.isEmpty()}">
+            <table><thead><tr><th>Student</th><th>Login</th><th>Batch</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody><tr th:each="student : ${students}">
+                    <td><strong th:text="${profileById[student.id]?.fullName ?: student.username}">Student</strong></td>
+                    <td><span th:text="${student.username}"></span><small class="table-sub" th:text="${student.email}"></small></td>
+                    <td th:text="${profileById[student.id]?.batch?.name ?: 'Unassigned'}">Unassigned</td>
+                    <td><span class="status-chip" th:classappend="${student.active} ? 'status-active' : 'status-inactive'" th:text="${student.active} ? 'Active' : 'Inactive'"></span></td>
+                    <td>
+                        <details class="inline-edit"><summary>Edit</summary><form th:action="@{/admin/students/{id}/edit(id=${student.id})}" method="post">
+                            <input name="fullName" required placeholder="Full name" th:value="${profileById[student.id]?.fullName}">
+                            <input name="username" required placeholder="Username" th:value="${student.username}">
+                            <input name="email" required type="email" placeholder="Email" th:value="${student.email}">
+                            <input name="phone" placeholder="Phone" th:value="${profileById[student.id]?.phone}">
+                            <select name="batchId"><option value="">No batch</option><option th:each="batch : ${batches}" th:value="${batch.id}" th:selected="${profileById[student.id]?.batch?.id == batch.id}" th:text="${batch.name}"></option></select>
+                            <button class="button button-primary button-small">Save changes</button>
+                        </form></details>
+                        <form th:if="${student.active}" th:action="@{/admin/students/{id}/delete(id=${student.id})}" method="post" class="inline-form" onsubmit="return confirm('Delete this student account? The student will lose login access; their historical records will be retained.');"><button class="text-button danger-text" type="submit">Delete</button></form>
+                        <form th:unless="${student.active}" th:action="@{/admin/students/{id}/activate(id=${student.id})}" method="post" class="inline-form"><button class="text-button">Reactivate</button></form>
+                    </td>
+                </tr></tbody>
+            </table>
+        </div>
+        <p class="empty-state" th:if="${students.isEmpty()}">No student accounts yet. Create the first one above.</p>
+    </section>
+    <section class="panel" id="batches">
+        <div class="panel-heading"><div><span class="eyebrow">COHORTS</span><h2>Training batches</h2></div></div>
+        <form class="compact-form" th:action="@{/admin/batches}" method="post"><label for="batch-name">New batch name</label><input id="batch-name" name="name" required maxlength="100" placeholder="e.g. Morning Batch 2026"><button class="button button-primary" type="submit">Add batch</button></form>
+        <div class="chip-list"><span class="tag" th:each="batch : ${batches}" th:text="${batch.name}"></span><span class="muted" th:if="${batches.isEmpty()}">No batches created yet.</span></div>
+    </section>
+    <section class="panel" id="materials">
+        <div class="panel-heading"><div><span class="eyebrow">LEARNING LIBRARY</span><h2>Study materials</h2><p class="muted">Upload PDF, Word, PowerPoint, text or image files (up to 15 MB).</p></div></div>
+        <form class="form-grid" th:action="@{/admin/materials}" method="post" enctype="multipart/form-data">
+            <h3 class="form-title">Upload material</h3>
+            <label>Title<input name="title" required maxlength="160"></label>
+            <label>Share with batch<select name="batchId"><option value="">All students</option><option th:each="batch : ${batches}" th:value="${batch.id}" th:text="${batch.name}"></option></select></label>
+            <label>Choose file<input name="file" type="file" required accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.png,.jpg,.jpeg"></label>
+            <label class="full-width">Description<input name="description" maxlength="1000" placeholder="Optional notes"></label>
+            <button class="button button-primary" type="submit">Upload material</button>
+        </form>
+        <div class="record-list" th:if="${!materials.isEmpty()}">
+            <article class="record-row" th:each="material : ${materials}">
+                <div><span class="tag" th:text="${material.batch != null ? material.batch.name : 'ALL STUDENTS'}"></span><h3 th:text="${material.title}"></h3><p th:text="${material.description}"></p><small class="muted" th:text="${material.originalFilename}"></small></div>
+                <div class="record-actions"><a class="text-button" th:href="@{/admin/materials/{id}/file(id=${material.id})}">Download</a><form th:action="@{/admin/materials/{id}/deactivate(id=${material.id})}" method="post"><button class="text-button danger-text" type="submit">Remove</button></form></div>
+            </article>
+        </div>
+        <p class="empty-state" th:if="${materials.isEmpty()}">No study files uploaded yet.</p>
+    </section>
+    <section class="panel" id="records">
+        <div class="panel-heading"><div><span class="eyebrow">ACADEMY UPDATES</span><h2>Publish and manage records</h2><p class="muted">Notices, schedules, attendance, fees, study links, mock tests and fitness updates.</p></div></div>
+        <form class="form-grid record-form" th:action="@{/admin/records}" method="post" enctype="multipart/form-data">
+            <h3 class="form-title">New record</h3>
+            <label>Category<select name="type" required><option th:each="type : ${recordTypes}" th:value="${type}" th:text="${#strings.replace(type.name(), '_', ' ')}"></option></select></label>
+            <label>Title<input name="title" required maxlength="160"></label>
+            <label>For batch<select name="batchId"><option value="">All batches</option><option th:each="batch : ${batches}" th:value="${batch.id}" th:text="${batch.name}"></option></select></label>
+            <label>For student (attendance, fees, results, progress)<select name="studentId"><option value="">Not student-specific</option><option th:each="student : ${students}" th:if="${student.active}" th:value="${student.id}" th:text="${student.username + ' — ' + student.email}"></option></select></label>
+            <label>Date<input name="eventDate" type="date"></label>
+            <label>Status / value<input name="status" maxlength="80" placeholder="PRESENT, PAID, installment 1, score 82%"></label>
+            <label class="full-width">Details / resource link<textarea name="details" rows="3" maxlength="3000" placeholder="Schedule details, payment notes, material URL, mock test details..."></textarea></label>
+            <label class="full-width">PDF or image attachment (optional)<input name="attachmentFile" type="file" accept=".pdf,.png,.jpg,.jpeg"><small class="muted">PDF, PNG or JPEG · maximum 15 MB · shown to the selected batch or all students.</small></label>
+            <button class="button button-primary" type="submit">Publish record</button>
+        </form>
+        <div class="record-list" th:if="${!records.isEmpty()}">
+            <article class="record-row" th:each="record : ${records}">
+                <div><span class="tag" th:text="${#strings.replace(record.type.name(), '_', ' ')}"></span><h3 th:text="${record.title}">Record title</h3><p th:text="${record.details}"></p><a class="record-attachment" th:if="${record.attachment != null}" th:href="@{/admin/materials/{id}/file(id=${record.attachment.id})}" th:text="${'Download attachment: ' + record.attachment.originalFilename}"></a><small class="muted record-audience" th:text="${(record.eventDate != null ? record.eventDate + ' · ' : '') + (record.student != null ? record.student.username : (record.batch != null ? record.batch.name : 'All students')) + (record.status != null && !record.status.isBlank() ? ' · ' + record.status : '')}"></small></div>
+                <form th:action="@{/admin/records/{id}/deactivate(id=${record.id})}" method="post"><button class="text-button danger-text" type="submit">Unpublish</button></form>
+            </article>
+        </div>
+        <p class="empty-state" th:if="${records.isEmpty()}">No records published yet.</p>
+    </section>
+    <section class="panel" id="account">
+        <div class="panel-heading"><div><span class="eyebrow">ACCOUNT SECURITY</span><h2>Change admin login</h2><p class="muted">Change the username, password, or both. Confirm your current password to save.</p></div></div>
+        <form class="form-grid account-security-form" th:action="@{/admin/account/security}" method="post">
+            <label>Current password<input name="currentPassword" type="password" required autocomplete="current-password"></label>
+            <label>New username<input name="username" th:value="${adminUsername}" required minlength="3" maxlength="80" autocomplete="username"></label>
+            <label>New password<input name="newPassword" type="password" minlength="12" maxlength="72" autocomplete="new-password" placeholder="Leave blank to keep current password"></label>
+            <label>Confirm new password<input name="confirmPassword" type="password" minlength="12" maxlength="72" autocomplete="new-password" placeholder="Enter new password again"></label>
+            <p class="form-help">Passwords must be 12–72 characters. Login changes are saved to the SQL users table.</p>
+            <button class="button button-primary" type="submit">Save admin login</button>
+        </form>
+    </section>
+    <footer class="dashboard-footer">Sai Sahayadri Academy · Administration portal</footer>
+</main>
+</body>
+</html>

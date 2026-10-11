@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Student Dashboard | Sai Sahayadri Academy</title>
+    <link rel="stylesheet" th:href="@{/css/academy.css}">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand-lockup brand-dark" th:href="@{/student}"><span class="brand-mark">SS</span><span><strong>SAI SAHAYADRI</strong><small>ACADEMY</small></span></a>
+    <div class="topbar-right"><span class="role-chip student-chip">STUDENT</span><form th:action="@{/logout}" method="post"><button class="button button-outline button-small" type="submit">Sign out</button></form></div>
+</header>
+<main class="dashboard">
+    <section class="welcome-banner"><div><span class="eyebrow">STUDENT PORTAL</span><h1>Welcome, <span th:text="${profile.fullName}">Student</span></h1><p th:text="${profile.batch != null ? profile.batch.name : 'Your batch has not been assigned yet.'}">Your batch</p></div><div class="welcome-icon">✦</div></section>
+    <section class="stats-grid attendance-grid">
+        <article class="stat-card attendance-card"><span>Lecture attendance</span><strong><span th:text="${lecturePercent}">0</span><small>%</small></strong><small class="muted" th:text="${lectureCount + ' sessions recorded'}"></small></article>
+        <article class="stat-card attendance-card"><span>Ground attendance</span><strong><span th:text="${groundPercent}">0</span><small>%</small></strong><small class="muted" th:text="${groundCount + ' sessions recorded'}"></small></article>
+        <article class="stat-card"><span>Batch</span><strong class="batch-stat" th:text="${profile.batch != null ? profile.batch.name : '—'}">—</strong><small class="muted">Assigned cohort</small></article>
+    </section>
+    <section class="panel profile-panel">
+        <div><span class="eyebrow">YOUR PROFILE</span><h2>Account details</h2></div>
+        <dl class="profile-grid"><div><dt>Full name</dt><dd th:text="${profile.fullName}"></dd></div><div><dt>Username</dt><dd th:text="${account.username}"></dd></div><div><dt>Email</dt><dd th:text="${account.email}"></dd></div><div><dt>Phone</dt><dd th:text="${profile.phone != null && !profile.phone.isBlank() ? profile.phone : 'Not provided'}"></dd></div></dl>
+    </section>
+    <section class="panel">
+        <div class="panel-heading"><div><span class="eyebrow">YOUR LEARNING</span><h2>Notices, schedule & progress</h2><p class="muted">Personal records and items shared with your batch.</p></div></div>
+        <div class="material-library" th:if="${!materials.isEmpty()}">
+            <article class="material-item" th:each="material : ${materials}">
+                <span class="material-icon">↧</span>
+                <div><h3 th:text="${material.title}"></h3><p th:text="${material.description != null && !material.description.isBlank() ? material.description : material.originalFilename}"></p></div>
+                <a class="button button-outline button-small" th:href="@{/student/materials/{id}/file(id=${material.id})}">Download</a>
+            </article>
+        </div>
+        <div class="student-record-grid" th:if="${!records.isEmpty()}">
+            <article class="student-record" th:each="record : ${records}">
+                <span class="tag" th:text="${#strings.replace(record.type.name(), '_', ' ')}">NOTICE</span>
+                <h3 th:text="${record.title}">Title</h3>
+                <p th:text="${record.details}">Details</p>
+                <a class="record-attachment" th:if="${record.attachment != null}" th:href="@{/student/materials/{id}/file(id=${record.attachment.id})}" th:text="${'Download attachment: ' + record.attachment.originalFilename}"></a>
+                <div class="record-meta"><span th:if="${record.eventDate != null}" th:text="${record.eventDate}"></span><span th:if="${record.status != null && !record.status.isBlank()}" th:text="${record.status}"></span></div>
+            </article>
+        </div>
+        <div class="empty-state" th:if="${records.isEmpty()}"><span class="empty-icon">✧</span><strong>Nothing new just yet</strong><p>Academy notices, schedules and your personal updates will appear here.</p></div>
+    </section>
+    <footer class="dashboard-footer">Sai Sahayadri Academy · Keep showing up, keep growing</footer>
+</main>
+</body>
+</html>
